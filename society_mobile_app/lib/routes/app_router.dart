@@ -37,6 +37,10 @@ import '../features/bookings/screens/hall_booking_list_screen.dart';
 import '../features/bookings/screens/create_hall_booking_screen.dart';
 import '../features/bookings/models/hall_booking_model.dart';
 import '../features/guard/screens/guard_visitor_log_screen.dart';
+import '../features/monsoonproof/screens/report_issue_screen.dart';
+import '../features/monsoonproof/screens/shared_case_details_screen.dart';
+import '../features/monsoonproof/screens/work_order_details_screen.dart';
+import '../features/monsoonproof/screens/verify_repair_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -133,8 +137,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HelpSupportScreen(),
       ),
       GoRoute(
+        path: '/report-issue',
+        builder: (context, state) => const ReportIssueScreen(),
+      ),
+      GoRoute(
         path: '/complaint-create',
         builder: (context, state) => const ComplaintCreateScreen(),
+      ),
+      GoRoute(
+        path: '/shared-case/:id',
+        builder: (context, state) => SharedCaseDetailsScreen(
+          caseId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/work-order/:id',
+        builder: (context, state) => WorkOrderDetailsScreen(
+          workOrderId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/verify-repair/:id',
+        builder: (context, state) => VerifyRepairScreen(
+          caseId: state.pathParameters['id'] ?? '',
+        ),
       ),
       GoRoute(
         path: '/complaint-details/:id',

@@ -349,7 +349,7 @@ export function linkIncidentsToSharedCase(
     const existing = state.sharedCases.find((c) => c.id === input.caseId);
     if (!existing) return { ok: false, error: 'Shared case not found.' };
     const conflict = versionConflict(existing.version, input.expectedVersion);
-    if (!conflict.ok) return conflict;
+    if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
     const mergedIds = Array.from(new Set([...existing.incidentIds, ...input.incidentIds]));
     const updated: SharedCase = {
@@ -427,7 +427,7 @@ export function proposeHandoff(input: ProposeHandoffInput): CommandResult<{ case
   const existing = state.sharedCases.find((c) => c.id === input.caseId);
   if (!existing) return { ok: false, error: 'Shared case not found.' };
   const conflict = versionConflict(existing.version, input.expectedVersion);
-  if (!conflict.ok) return conflict;
+  if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
   if (!input.reason.trim()) {
     return { ok: false, error: 'A reason is required to propose handoff.' };
@@ -468,7 +468,7 @@ export function decideHandoff(input: DecideHandoffInput): CommandResult<{ case: 
   const existing = state.sharedCases.find((c) => c.id === input.caseId);
   if (!existing) return { ok: false, error: 'Shared case not found.' };
   const conflict = versionConflict(existing.version, input.expectedVersion);
-  if (!conflict.ok) return conflict;
+  if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
   if (existing.handoffStatus !== 'proposed' && existing.handoffStatus !== 'info_requested') {
     return { ok: false, error: 'No pending handoff to decide.' };
@@ -543,7 +543,7 @@ export function createWorkOrder(
   const existing = state.sharedCases.find((c) => c.id === input.caseId);
   if (!existing) return { ok: false, error: 'Shared case not found.' };
   const conflict = versionConflict(existing.version, input.expectedVersion);
-  if (!conflict.ok) return conflict;
+  if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
   const worker = input.assignedWorkerId
     ? state.workers.find((w) => w.id === input.assignedWorkerId)
@@ -591,7 +591,7 @@ export function updateWorkOrderStatus(
   const existing = state.workOrders.find((w) => w.id === input.workOrderId);
   if (!existing) return { ok: false, error: 'Work order not found.' };
   const conflict = versionConflict(existing.version, input.expectedVersion);
-  if (!conflict.ok) return conflict;
+  if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
   if (input.status === 'reopened' && !input.reason?.trim()) {
     return { ok: false, error: 'A reason is required to reopen.' };
@@ -667,7 +667,7 @@ export function finalizeEvidenceUpload(
   const existing = state.workOrders.find((w) => w.id === input.workOrderId);
   if (!existing) return { ok: false, error: 'Work order not found.' };
   const conflict = versionConflict(existing.version, input.expectedVersion);
-  if (!conflict.ok) return conflict;
+  if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
   const evidence = existing.evidence.map((e) =>
     e.id === input.evidenceId ? { ...e, finalized: true } : e,
@@ -738,7 +738,7 @@ export function verifyRepair(
   const existing = state.workOrders.find((w) => w.id === input.workOrderId);
   if (!existing) return { ok: false, error: 'Work order not found.' };
   const conflict = versionConflict(existing.version, input.expectedVersion);
-  if (!conflict.ok) return conflict;
+  if (!conflict.ok) return { ok: false, conflict: conflict.conflict, error: conflict.error };
 
   if (input.action === 'reopen' && !input.reason?.trim()) {
     return { ok: false, error: 'A reason is required to reopen.' };

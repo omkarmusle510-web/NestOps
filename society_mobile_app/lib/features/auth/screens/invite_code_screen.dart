@@ -75,7 +75,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Welcome to MONSOONPROOF'),
+        title: const Text('Welcome to NestOps'),
         actions: [
           TextButton(
             onPressed: () => context.go('/login'),
@@ -108,7 +108,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tap a persona to explore MONSOONPROOF without Firebase.',
+                  'Tap a persona to explore NestOps without Firebase.',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),

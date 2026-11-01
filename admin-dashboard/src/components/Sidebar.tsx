@@ -137,7 +137,7 @@ export default function Sidebar() {
         <div className="sidebar-header">
           <div className="sidebar-logo">M</div>
           <div>
-            <div className="sidebar-title">MONSOONPROOF</div>
+            <div className="sidebar-title">NestOps</div>
             <div className="sidebar-subtitle">Drainage Coordination</div>
           </div>
         </div>
