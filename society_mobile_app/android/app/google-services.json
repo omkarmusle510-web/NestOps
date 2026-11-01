@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "47849992844",
+    "project_id": "soc-appv1",
+    "storage_bucket": "soc-appv1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47849992844:android:f93418e120cb39fa6241a9",
+        "android_client_info": {
+          "package_name": "com.societymaintenance.society_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWUhNRMWCbsnK40tWrQI5JahvwXzmzySA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

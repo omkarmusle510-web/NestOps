@@ -1,0 +1,82 @@
+{
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "no_account": "Don't have an account? Register here.",
+    "register": "Register",
+    "name": "Full Name",
+    "role": "Role",
+    "resident": "Resident",
+    "worker": "Worker",
+    "flat_id": "Flat ID (e.g. A-101)",
+    "category": "Worker Category",
+    "electrical": "Electrical",
+    "plumbing": "Plumbing",
+    "housekeeping": "Housekeeping",
+    "ironing": "Ironing",
+    "have_account": "Already have an account? Login here."
+  },
+  "home": {
+    "my_complaints": "My Complaints",
+    "dues": "My Dues",
+    "profile": "Profile",
+    "new_complaint": "New Request",
+    "active_issues": "Active Issues",
+    "past_issues": "Past Issues",
+    "worker_dashboard": "Worker Dashboard",
+    "pending_jobs": "Pending Jobs",
+    "my_earnings": "My Earnings"
+  },
+  "complaint": {
+    "category": "Category",
+    "urgency": "Urgency",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "emergency": "Emergency",
+    "describe_issue": "Describe the Issue",
+    "visit_time": "Preferred Visit Time",
+    "anytime": "Anytime Today",
+    "morning": "Morning Slot (9 AM - 12 PM)",
+    "evening": "Evening Slot (4 PM - 7 PM)",
+    "custom": "Custom Time Slot",
+    "submit": "Submit Request",
+    "update": "Update Complaint",
+    "edit": "Edit Complaint",
+    "details": "Complaint Details",
+    "status": "Current Status",
+    "assigned_worker": "Assigned Worker",
+    "close": "Close Complaint",
+    "reopen": "Reopen Issue",
+    "confirm_done": "Confirm Done",
+    "reschedule": "Reschedule Visit",
+    "visit_time_confirmed": "Visit Time Confirmed",
+    "confirm_visit_time": "Confirm Visit Time"
+  },
+  "ironing": {
+    "clothes": "Clothes to Iron",
+    "shirts": "Shirts",
+    "trousers": "Trousers",
+    "sarees": "Sarees",
+    "others": "Others",
+    "total": "Estimated Total",
+    "details": "Ironing Details & Payment"
+  },
+  "profile": {
+    "title": "My Profile",
+    "language_settings": "Language Settings",
+    "app_theme": "App Theme",
+    "user_guide": "User Guide",
+    "support": "Help & Support",
+    "privacy": "Privacy Policy",
+    "logout": "Sign Out"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "success": "Success",
+    "error": "Error",
+    "loading": "Loading..."
+  }
+}

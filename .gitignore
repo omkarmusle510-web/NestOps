@@ -1,0 +1,46 @@
+# Node.js dependencies and logs
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Next.js build output
+**/.next/
+**/out/
+**/.turbo/
+
+# Flutter / Dart generated files
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/build/
+**/coverage/
+**/.pub-cache/
+
+# Firebase local state and logs
+.firebase/
+**/.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Local environment and private credentials
+.env
+.env.*
+!.env.example
+**/serviceAccount*.json
+**/firebase-adminsdk*.json
+**/*.pem
+**/*.p12
+
+# Do not accidentally run/commit legacy database seeding scripts
+admin-dashboard/seed*.js
+admin-dashboard/seed*.mjs
+functions/seed.js
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store

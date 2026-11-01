@@ -1,0 +1,82 @@
+{
+  "auth": {
+    "login": "लॉग इन (Login)",
+    "email": "ईमेल (Email)",
+    "password": "पासवर्ड (Password)",
+    "no_account": "खाता नहीं है? यहाँ रजिस्टर करें।",
+    "register": "रजिस्टर (Register)",
+    "name": "पूरा नाम (Full Name)",
+    "role": "भूमिका (Role)",
+    "resident": "निवासी (Resident)",
+    "worker": "कर्मचारी (Worker)",
+    "flat_id": "फ्लैट नंबर (Flat ID)",
+    "category": "काम की श्रेणी (Category)",
+    "electrical": "इलेक्ट्रिकल (Electrical)",
+    "plumbing": "प्लंबिंग (Plumbing)",
+    "housekeeping": "हाउसकीपिंग (Housekeeping)",
+    "ironing": "प्रेस / इस्त्री (Ironing)",
+    "have_account": "पहले से खाता है? यहाँ लॉग इन करें।"
+  },
+  "home": {
+    "my_complaints": "मेरी शिकायतें (My Complaints)",
+    "dues": "बकाया राशि (My Dues)",
+    "profile": "प्रोफ़ाइल (Profile)",
+    "new_complaint": "नया अनुरोध (New Request)",
+    "active_issues": "सक्रिय समस्याएँ (Active Issues)",
+    "past_issues": "पुरानी समस्याएँ (Past Issues)",
+    "worker_dashboard": "कर्मचारी डैशबोर्ड (Worker Dashboard)",
+    "pending_jobs": "लंबित कार्य (Pending Jobs)",
+    "my_earnings": "मेरी कमाई (My Earnings)"
+  },
+  "complaint": {
+    "category": "श्रेणी (Category)",
+    "urgency": "आवश्यकता (Urgency)",
+    "low": "कम (Low)",
+    "medium": "मध्यम (Medium)",
+    "high": "ज्यादा (High)",
+    "emergency": "आपातकालीन (Emergency)",
+    "describe_issue": "समस्या का विवरण (Describe Issue)",
+    "visit_time": "आने का समय (Visit Time)",
+    "anytime": "आज कभी भी (Anytime Today)",
+    "morning": "सुबह (9 AM - 12 PM)",
+    "evening": "शाम (4 PM - 7 PM)",
+    "custom": "अन्य समय (Custom Time)",
+    "submit": "सबमिट करें (Submit)",
+    "update": "अपडेट करें (Update)",
+    "edit": "बदलें (Edit)",
+    "details": "विवरण (Details)",
+    "status": "वर्तमान स्थिति (Status)",
+    "assigned_worker": "निर्दिष्ट कर्मचारी (Worker)",
+    "close": "बंद करें (Close)",
+    "reopen": "फिर से खोलें (Reopen)",
+    "confirm_done": "काम पूरा हुआ (Confirm Done)",
+    "reschedule": "समय बदलें (Reschedule)",
+    "visit_time_confirmed": "समय पक्का हो गया (Time Confirmed)",
+    "confirm_visit_time": "समय पक्का करें (Confirm Time)"
+  },
+  "ironing": {
+    "clothes": "इस्त्री के कपड़े (Clothes)",
+    "shirts": "शर्ट (Shirts)",
+    "trousers": "पैंट (Trousers)",
+    "sarees": "साड़ी (Sarees)",
+    "others": "अन्य (Others)",
+    "total": "कुल राशि (Total)",
+    "details": "इस्त्री और भुगतान (Ironing Details)"
+  },
+  "profile": {
+    "title": "मेरी प्रोफ़ाइल (My Profile)",
+    "language_settings": "भाषा (Language)",
+    "app_theme": "थीम (App Theme)",
+    "user_guide": "उपयोगकर्ता गाइड (User Guide)",
+    "support": "सहायता (Support)",
+    "privacy": "गोपनीयता नीति (Privacy)",
+    "logout": "लॉग आउट (Logout)"
+  },
+  "common": {
+    "cancel": "रद्द करें (Cancel)",
+    "save": "सेव करें (Save)",
+    "success": "सफल (Success)",
+    "error": "त्रुटि (Error)",
+    "loading": "लोड हो रहा है... (Loading...)"
+  }
+}
