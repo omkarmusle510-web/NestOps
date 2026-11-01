@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'resident_home_screen.dart';
-import '../../bookings/screens/hall_booking_list_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 
 class ResidentMainScreen extends ConsumerStatefulWidget {
@@ -18,15 +17,8 @@ class _ResidentMainScreenState extends ConsumerState<ResidentMainScreen> {
 
   final List<Widget> _screens = const [
     ResidentHomeScreen(),
-    HallBookingListScreen(),
     ProfileScreen(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   void _showOptionsBottomSheet(BuildContext context) {
     final theme = Theme.of(context);
@@ -39,87 +31,37 @@ class _ResidentMainScreenState extends ConsumerState<ResidentMainScreen> {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Quick Actions',
-                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue.shade50,
-                      child: Icon(Icons.add_task_rounded, color: Colors.blue.shade700),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    title: Text('Add Complaint', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('Request electrician, plumber, housekeeping, or ironing'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/complaint-create');
-                    },
-                  ),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.green.shade50,
-                      child: Icon(Icons.event_seat_rounded, color: Colors.green.shade700),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    title: Text('Book Community Hall', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('Reserve hall for private events'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/hall-booking-create');
-                    },
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    child: Icon(Icons.report_problem_rounded, color: theme.colorScheme.primary),
                   ),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.amber.shade50,
-                      child: Icon(Icons.report_problem_rounded, color: Colors.amber.shade700),
-                    ),
-                    title: Text('Report Society Issue', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('Report lift, gate, or common area issues'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/society-issue-create');
-                    },
-                  ),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.orange.shade50,
-                      child: Icon(Icons.receipt_long_rounded, color: Colors.orange.shade700),
-                    ),
-                    title: Text('Ironing Bills', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('View outstanding ledger and history'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/resident-bills');
-                    },
-                  ),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.teal.shade50,
-                      child: Icon(Icons.contact_phone_rounded, color: Colors.teal.shade700),
-                    ),
-                    title: Text('Worker Contacts', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('Directory of all society staff'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/worker-directory');
-                    },
-                  ),
-                ],
-              ),
+                  title: const Text('Report Issue', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Drainage, seepage, flooding, shared assets'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/report-issue');
+                  },
+                ),
+              ],
             ),
           ),
         );
@@ -129,39 +71,37 @@ class _ResidentMainScreenState extends ConsumerState<ResidentMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Index map: 0 Home, 1 Actions (sheet), 2 Profile
+    final navIndex = _selectedIndex == 0 ? 0 : 2;
+
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex >= 2 ? _selectedIndex + 1 : _selectedIndex,
+        selectedIndex: navIndex,
         onDestinationSelected: (index) {
-          if (index == 2) {
+          if (index == 1) {
             _showOptionsBottomSheet(context);
-          } else {
-            setState(() {
-              _selectedIndex = index > 2 ? index - 1 : index;
-            });
+          } else if (index == 0) {
+            setState(() => _selectedIndex = 0);
+          } else if (index == 2) {
+            setState(() => _selectedIndex = 1);
           }
         },
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.event_available_outlined),
-            selectedIcon: Icon(Icons.event_available),
-            label: 'Bookings',
+            icon: Icon(Icons.add_circle_outline, color: Theme.of(context).colorScheme.secondary),
+            selectedIcon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.secondary),
+            label: 'Report',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.add_circle_outline, color: Colors.blue),
-            selectedIcon: Icon(Icons.add_circle, color: Colors.blue),
-            label: 'Actions',
-          ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Profile',

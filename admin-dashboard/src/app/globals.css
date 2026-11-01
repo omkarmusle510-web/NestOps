@@ -1,26 +1,32 @@
 /* ──────────────────────────────────────
-   Society Maintenance App — Admin Dashboard
+   MONSOONPROOF — Admin Dashboard
    Design System & Global Styles
    ────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@500;600;700&display=swap');
 
 /* ──────────────────────────────────────
    CSS Custom Properties (Design Tokens)
    ────────────────────────────────────── */
 
 :root {
-  /* Primary Palette — Ocean Blue */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6; /* App primaryColor */
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* Brand */
+  --brand-forest: #164E41;
+  --brand-teal: #147D72;
+  --brand-amber: #D99A32;
+  --brand-bg: #F4F7F5;
+
+  /* Primary Palette — Forest / Teal */
+  --color-primary-50: #eef7f4;
+  --color-primary-100: #d5ebe4;
+  --color-primary-200: #aed7cb;
+  --color-primary-300: #7bb8a8;
+  --color-primary-400: #3d9a86;
+  --color-primary-500: #147D72;
+  --color-primary-600: #164E41;
+  --color-primary-700: #133f35;
+  --color-primary-800: #10332b;
+  --color-primary-900: #0c2620;
 
   /* Neutral Palette — Slate */
   --color-neutral-50: #f8fafc;
@@ -71,9 +77,9 @@
 
   /* Surface Colors */
   --surface-primary: #ffffff;
-  --surface-secondary: var(--color-neutral-50);
+  --surface-secondary: var(--brand-bg);
   --surface-elevated: #ffffff;
-  --surface-overlay: rgba(15, 23, 42, 0.6);
+  --surface-overlay: rgba(12, 38, 32, 0.55);
 
   /* Sidebar (White & Blue Minimalist) */
   --sidebar-bg: #ffffff;
@@ -86,7 +92,7 @@
   --sidebar-collapsed-width: 72px;
 
   /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family: 'Source Sans 3', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.8125rem;
   --font-size-base: 0.875rem;
@@ -263,7 +269,7 @@ input, textarea, select {
 .sidebar-logo {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-400));
+  background: var(--brand-forest);
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -391,7 +397,7 @@ input, textarea, select {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-400));
+  background: var(--brand-teal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -574,11 +580,11 @@ input, textarea, select {
   transform: translateY(-2px);
 }
 
-.kpi-card--primary::before { background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-400)); }
-.kpi-card--danger::before { background: linear-gradient(90deg, var(--color-danger-500), var(--color-danger-400)); }
-.kpi-card--warning::before { background: linear-gradient(90deg, var(--color-warning-500), var(--color-warning-400)); }
-.kpi-card--success::before { background: linear-gradient(90deg, var(--color-success-500), var(--color-success-400)); }
-.kpi-card--info::before { background: linear-gradient(90deg, var(--color-info-500), var(--color-info-400)); }
+.kpi-card--primary::before { background: var(--brand-forest); }
+.kpi-card--danger::before { background: var(--color-danger-500); }
+.kpi-card--warning::before { background: var(--brand-amber); }
+.kpi-card--success::before { background: var(--brand-teal); }
+.kpi-card--info::before { background: var(--color-primary-400); }
 
 .kpi-icon {
   width: 40px;
@@ -663,6 +669,20 @@ input, textarea, select {
 .badge--pending { background: var(--color-warning-100); color: var(--color-warning-600); }
 .badge--approved { background: var(--color-success-100); color: var(--color-success-700); }
 .badge--rejected { background: var(--color-danger-100); color: var(--color-danger-600); }
+
+.badge--triaged { background: var(--color-primary-100); color: var(--color-primary-700); }
+.badge--linked { background: var(--color-info-100); color: var(--color-info-600); }
+.badge--open { background: var(--color-primary-100); color: var(--color-primary-700); }
+.badge--handoff_pending { background: #fef3e0; color: #9a6b14; }
+.badge--in_repair { background: var(--color-primary-100); color: var(--color-primary-700); }
+.badge--awaiting_verification { background: #fef3e0; color: #9a6b14; }
+.badge--verified { background: var(--color-success-100); color: var(--color-success-700); }
+.badge--disputed { background: var(--color-danger-100); color: var(--color-danger-600); }
+.badge--proposed { background: #fef3e0; color: #9a6b14; }
+.badge--accepted { background: var(--color-success-100); color: var(--color-success-700); }
+.badge--info_requested { background: var(--color-info-100); color: var(--color-info-600); }
+.badge--draft { background: var(--color-neutral-100); color: var(--color-neutral-600); }
+.badge--none { background: var(--color-neutral-100); color: var(--color-neutral-600); }
 
 .badge-dot {
   width: 6px;
@@ -751,7 +771,7 @@ input, textarea, select {
 
 .btn--primary:hover {
   background: var(--color-primary-700);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 12px rgba(22, 78, 65, 0.28);
 }
 
 .btn--secondary {
@@ -824,7 +844,7 @@ input, textarea, select {
 
 .form-input:focus {
   border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(20, 125, 114, 0.15);
 }
 
 .form-input::placeholder {
@@ -850,7 +870,7 @@ input, textarea, select {
 
 .form-select:focus {
   border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(20, 125, 114, 0.15);
 }
 
 /* ──────────────────────────────────────
@@ -1057,6 +1077,12 @@ input, textarea, select {
    Responsive
    ────────────────────────────────────── */
 
+@media (max-width: 1280px) {
+  .dashboard-content {
+    padding: var(--space-6);
+  }
+}
+
 @media (max-width: 1024px) {
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1070,6 +1096,7 @@ input, textarea, select {
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
+    box-shadow: var(--shadow-xl);
   }
 
   .sidebar.open {
@@ -1080,6 +1107,10 @@ input, textarea, select {
     margin-left: 0;
   }
 
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+
   .kpi-grid {
     grid-template-columns: 1fr;
   }
@@ -1088,8 +1119,29 @@ input, textarea, select {
     flex-direction: column;
     align-items: stretch;
   }
+
+  .mp-two-col {
+    grid-template-columns: 1fr !important;
+  }
 }
-
-/* Mobile Menu Button */
-.mobile-menu-btn { display: none; }
-@media (max-width: 768px) { .mobile-menu-btn { display: flex !important; } }
+
+@media (max-width: 390px) {
+  .dashboard-content {
+    padding: var(--space-4);
+  }
+
+  .header-title {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn { display: none; }
+@media (max-width: 768px) { .mobile-menu-btn { display: flex !important; } }
+
+/* Confirm action helper */
+.mp-confirm-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-500);
+  margin-top: var(--space-2);
+}

@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { usePathname, useRouter } from 'next/navigation';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { MonsoonProofProvider } from '@/context/MonsoonProofContext';
 import Sidebar from '@/components/Sidebar';
 
 function LayoutManager({ children }: { children: React.ReactNode }) {
@@ -92,31 +93,33 @@ export default function ClientProviders({ children }: { children: React.ReactNod
   return (
     <AuthProvider>
       <AppProvider>
-        <LayoutManager>
-          {children}
-        </LayoutManager>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              fontFamily: 'var(--font-family)',
-              fontSize: 'var(--font-size-sm)',
-              fontWeight: 500,
-              borderRadius: 'var(--radius-lg)',
-              padding: '12px 16px',
-              boxShadow: 'var(--shadow-lg)',
-            },
-            success: {
-              iconTheme: { primary: '#059669', secondary: '#fff' },
-              style: { border: '1px solid var(--color-success-100)', background: '#fff' },
-            },
-            error: {
-              iconTheme: { primary: '#dc2626', secondary: '#fff' },
-              style: { border: '1px solid var(--color-danger-100)', background: '#fff' },
-            },
-          }}
-        />
+        <MonsoonProofProvider>
+          <LayoutManager>
+            {children}
+          </LayoutManager>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                fontFamily: 'var(--font-family)',
+                fontSize: 'var(--font-size-sm)',
+                fontWeight: 500,
+                borderRadius: 'var(--radius-lg)',
+                padding: '12px 16px',
+                boxShadow: 'var(--shadow-lg)',
+              },
+              success: {
+                iconTheme: { primary: '#164E41', secondary: '#fff' },
+                style: { border: '1px solid var(--color-success-100)', background: '#fff' },
+              },
+              error: {
+                iconTheme: { primary: '#dc2626', secondary: '#fff' },
+                style: { border: '1px solid var(--color-danger-100)', background: '#fff' },
+              },
+            }}
+          />
+        </MonsoonProofProvider>
       </AppProvider>
     </AuthProvider>
   );

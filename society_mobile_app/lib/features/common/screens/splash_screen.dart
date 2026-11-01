@@ -18,7 +18,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToNext() async {
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      // By default, go to invite code page for residents, or login for workers
       context.go('/invite');
     }
   }
@@ -34,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
             end: Alignment.bottomCenter,
             colors: [
               theme.colorScheme.primary,
-              theme.colorScheme.primary.withRed(50),
+              theme.colorScheme.secondary,
             ],
           ),
         ),
@@ -48,32 +47,32 @@ class _SplashScreenState extends State<SplashScreen> {
                   color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.home_work_rounded,
+                child: const Icon(
+                  Icons.water_drop_rounded,
                   size: 72,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 24),
-              Text(
-                'SOC APP',
+              const SizedBox(height: 24),
+              const Text(
+                'MONSOONPROOF',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'Residential Coordination Platform',
+                'Shared drainage · Cross-society cases',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 14,
                 ),
               ),
-              SizedBox(height: 48),
-              SizedBox(
+              const SizedBox(height: 48),
+              const SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(

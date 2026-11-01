@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Brand Colors (Refined Indigo & Teal)
-  static const Color primaryColor = Color(0xFF3F51B5); // Deep Indigo
-  static const Color secondaryColor = Color(0xFF009688); // Teal
-  static const Color accentColor = Color(0xFFFF9800); // Amber
-  
+  // MonsoonProof brand colors
+  static const Color primaryColor = Color(0xFF164E41); // Forest green
+  static const Color secondaryColor = Color(0xFF147D72); // Teal
+  static const Color accentColor = Color(0xFFD99A32); // Amber
+
   // Status Colors
   static const Color emergencyColor = Color(0xFFE53935); // Crimson
   static const Color highPriorityColor = Color(0xFFFB8C00); // Amber/Orange
   static const Color mediumPriorityColor = Color(0xFFFDD835); // Yellow
   static const Color lowPriorityColor = Color(0xFF4CAF50); // Green
-  
+
   // Neutral Colors (Light Theme)
-  static const Color lightBg = Color(0xFFF8FAFC);
+  static const Color lightBg = Color(0xFFF4F7F5);
   static const Color lightSurface = Colors.white;
   static const Color lightTextPrimary = Color(0xFF0F172A);
   static const Color lightTextSecondary = Color(0xFF475569);
-  
+
   // Neutral Colors (Dark Theme)
   static const Color darkBg = Color(0xFF0B0F19);
   static const Color darkSurface = Color(0xFF151F32);
@@ -31,6 +31,7 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
         secondary: secondaryColor,
+        tertiary: accentColor,
         error: emergencyColor,
         surface: lightSurface,
         onSurface: lightTextPrimary,
@@ -60,7 +61,7 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       textTheme: const TextTheme(
@@ -80,6 +81,7 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: primaryColor,
         secondary: secondaryColor,
+        tertiary: accentColor,
         error: emergencyColor,
         surface: darkSurface,
         onSurface: darkTextPrimary,
@@ -108,7 +110,7 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       textTheme: const TextTheme(

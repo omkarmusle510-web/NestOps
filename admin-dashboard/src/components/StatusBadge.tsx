@@ -44,6 +44,21 @@ const STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
   approved: 'Approved',
   rejected: 'Rejected',
+
+  // MONSOONPROOF
+  triaged: 'Triaged',
+  linked: 'Linked',
+  open: 'Open',
+  handoff_pending: 'Handoff Pending',
+  in_repair: 'In Repair',
+  awaiting_verification: 'Awaiting Verification',
+  verified: 'Verified',
+  disputed: 'Disputed',
+  none: 'None',
+  proposed: 'Proposed',
+  accepted: 'Accepted',
+  info_requested: 'Info Requested',
+  draft: 'Draft',
 };
 
 export default function StatusBadge({ status, withDot = true }: StatusBadgeProps) {

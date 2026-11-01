@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../../monsoonproof/data/demo_seed.dart';
 
 class InviteCodeScreen extends ConsumerStatefulWidget {
   const InviteCodeScreen({super.key});
@@ -30,8 +31,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authNotifier = ref.read(authProvider.notifier);
-    
-    // Attempt to register/login directly using the Invite Code
+
     final success = await authNotifier.submitInviteDetails(
       name: _nameController.text.trim(),
       flatNumber: _flatController.text.trim(),
@@ -41,7 +41,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
 
     if (mounted) {
       if (success) {
-        context.go('/'); // AuthProvider will redirect based on role
+        context.go('/');
       } else {
         final error = ref.read(authProvider).errorMessage;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -54,6 +54,19 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
     }
   }
 
+  void _enterDemo(DemoPersona persona) {
+    ref.read(authProvider.notifier).loginAsDemoPersona(
+          userId: persona.id,
+          name: persona.name,
+          role: persona.role,
+          societyId: persona.societyId,
+          societyName: persona.societyName,
+          flatId: persona.flatId,
+          category: persona.category,
+        );
+    context.go('/');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -62,11 +75,11 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome to SOC APP'),
+        title: const Text('Welcome to MONSOONPROOF'),
         actions: [
           TextButton(
             onPressed: () => context.go('/login'),
-            child: Text('Worker Login'),
+            child: const Text('Worker Login'),
           ),
         ],
       ),
@@ -78,30 +91,71 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 16),
+                const SizedBox(height: 8),
+                Text('Join Your Society', style: theme.textTheme.headlineMedium),
+                const SizedBox(height: 8),
                 Text(
-                  'Join Your Society',
-                  style: theme.textTheme.headlineMedium,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Enter the invite details provided by your society administrator to activate your account.',
+                  'Enter the invite details provided by your society administrator, or use Demo access below.',
                   style: theme.textTheme.bodyMedium,
                 ),
-                SizedBox(height: 28),
-                
-                // Resident Name
+                const SizedBox(height: 24),
+
+                Text(
+                  'Demo access',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tap a persona to explore MONSOONPROOF without Firebase.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                ...MonsoonProofDemoSeed.personas.map((persona) {
+                  final subtitle = persona.role == 'worker'
+                      ? 'Maintenance worker · drainage'
+                      : '${persona.societyName} · ${persona.flatId}';
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+                        child: Icon(
+                          persona.role == 'worker' ? Icons.engineering : Icons.home_outlined,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      title: Text(persona.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(subtitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: isLoading ? null : () => _enterDemo(persona),
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: theme.dividerColor)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('Or sign in with invite', style: theme.textTheme.bodyMedium),
+                    ),
+                    Expanded(child: Divider(color: theme.dividerColor)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
                 TextFormField(
                   controller: _nameController,
                   enabled: !isLoading,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
                     labelText: 'Full Name',
-                    hintText: 'e.g., Sanil Grover',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    hintText: 'e.g., Asha Mehta',
+                    prefixIcon: const Icon(Icons.person_outline_rounded),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -110,7 +164,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _flatController,
@@ -119,10 +173,8 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                   decoration: InputDecoration(
                     labelText: 'Flat Number',
                     hintText: 'e.g., 1302',
-                    prefixIcon: Icon(Icons.apartment_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    prefixIcon: const Icon(Icons.apartment_rounded),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -134,7 +186,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                     }
                     final blockChar = cleanVal[0];
                     final flatNum = int.tryParse(cleanVal.substring(2));
-                    
+
                     if (blockChar != '1' && blockChar != '2') {
                       return 'Block must start with 1 (Block A) or 2 (Block B)';
                     }
@@ -144,9 +196,8 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-                // Phone Number
                 TextFormField(
                   controller: _phoneController,
                   enabled: !isLoading,
@@ -155,12 +206,10 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                   decoration: InputDecoration(
                     labelText: 'Registered Phone Number',
                     hintText: '9876543210',
-                    prefixIcon: Icon(Icons.phone_rounded),
+                    prefixIcon: const Icon(Icons.phone_rounded),
                     prefixText: '+91 ',
                     counterText: '',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -173,9 +222,8 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-                // Invite Code
                 TextFormField(
                   controller: _inviteController,
                   enabled: !isLoading,
@@ -183,10 +231,8 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                   decoration: InputDecoration(
                     labelText: 'Invite Code',
                     hintText: 'Enter 6-digit code',
-                    prefixIcon: Icon(Icons.key_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    prefixIcon: const Icon(Icons.key_rounded),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -195,12 +241,12 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 32),
+                const SizedBox(height: 32),
 
                 ElevatedButton(
                   onPressed: isLoading ? null : _onSubmit,
                   child: isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -208,9 +254,9 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : Text('Verify Invite'),
+                      : const Text('Verify Invite'),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
               ],
             ),
           ),

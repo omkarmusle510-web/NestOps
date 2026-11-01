@@ -2,646 +2,206 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../complaints/models/complaint_model.dart';
-import '../providers/worker_provider.dart';
+import '../../monsoonproof/models/monsoonproof_enums.dart';
+import '../../monsoonproof/models/monsoonproof_models.dart';
+import '../../monsoonproof/providers/monsoonproof_providers.dart';
 
-enum TaskFilter { all, critical, pending, revisits, scheduled }
-
-class WorkerHomeScreen extends ConsumerStatefulWidget {
+class WorkerHomeScreen extends ConsumerWidget {
   const WorkerHomeScreen({super.key});
 
+  Color _statusColor(WorkOrderStatus status) {
+    switch (status) {
+      case WorkOrderStatus.assigned:
+        return Colors.blue;
+      case WorkOrderStatus.inProgress:
+        return AppTheme.secondaryColor;
+      case WorkOrderStatus.evidencePending:
+        return AppTheme.accentColor;
+      case WorkOrderStatus.completed:
+        return Colors.teal;
+      case WorkOrderStatus.verified:
+        return AppTheme.lowPriorityColor;
+      case WorkOrderStatus.reopened:
+        return AppTheme.emergencyColor;
+    }
+  }
+
   @override
-  ConsumerState<WorkerHomeScreen> createState() => _WorkerHomeScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final auth = ref.watch(authProvider);
+    final ordersAsync = ref.watch(workerWorkOrdersProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Work orders'),
+        actions: [
+          if (auth.isDemo)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Chip(
+                label: const Text('Demo', style: TextStyle(fontSize: 11)),
+                visualDensity: VisualDensity.compact,
+                backgroundColor: AppTheme.accentColor.withValues(alpha: 0.2),
+              ),
+            ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(workerWorkOrdersProvider);
+          await Future.delayed(const Duration(milliseconds: 400));
+        },
+        child: ordersAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => ListView(
+            children: [
+              const SizedBox(height: 120),
+              Center(child: Text('Failed to load work orders: $e')),
+              const SizedBox(height: 12),
+              Center(
+                child: OutlinedButton(
+                  onPressed: () => ref.invalidate(workerWorkOrdersProvider),
+                  child: const Text('Retry'),
+                ),
+              ),
+            ],
+          ),
+          data: (orders) {
+            final active = orders
+                .where((w) => w.status != WorkOrderStatus.verified)
+                .toList();
+
+            return ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        auth.name ?? 'Worker',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Assigned drainage / shared-asset work',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '${active.length} open work order${active.length == 1 ? '' : 's'}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text('Assigned work', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 12),
+                if (active.isEmpty)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.assignment_turned_in_outlined,
+                              size: 48,
+                              color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No open work orders',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  ...active.map((wo) => _WorkOrderCard(
+                        workOrder: wo,
+                        color: _statusColor(wo.status),
+                        onTap: () => context.push('/work-order/${wo.id}'),
+                      )),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
 
-class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
-  TaskFilter _currentFilter = TaskFilter.all;
+class _WorkOrderCard extends StatelessWidget {
+  final WorkOrder workOrder;
+  final Color color;
+  final VoidCallback onTap;
 
-  Color _getUrgencyColor(String urgency) {
-    switch (urgency.toLowerCase()) {
-      case 'emergency':
-        return AppTheme.emergencyColor;
-      case 'high':
-        return AppTheme.highPriorityColor;
-      case 'medium':
-        return AppTheme.mediumPriorityColor;
-      default:
-        return AppTheme.lowPriorityColor;
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'submitted':
-      case 'queued':
-        return Colors.blue;
-      case 'visited':
-      case 'revisit_scheduled':
-        return Colors.purple;
-      case 'need_tools':
-        return AppTheme.highPriorityColor;
-      case 'awaiting_confirmation':
-        return Colors.teal;
-      case 'closed':
-        return AppTheme.lowPriorityColor;
-      case 'reopened':
-      case 'escalated':
-        return AppTheme.emergencyColor;
-      default:
-        return Theme.of(context).colorScheme.onSurfaceVariant;
-    }
-  }
+  const _WorkOrderCard({
+    required this.workOrder,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final authState = ref.watch(authProvider);
-    final category = authState.category ?? 'electrical';
-    final workerPhone = authState.phone ?? 'Worker';
-
-    // Watch complaints for this worker's category
-    final complaintsAsync = ref.watch(workerComplaintsStreamProvider(category));
-
-    // Watch pauses to show if the worker is currently paused
-    final pausesAsync = ref.watch(workerPausesStreamProvider(authState.userId ?? ''));
-    final isPaused = pausesAsync.maybeWhen(
-      data: (pauses) => pauses.any((p) => p.status == 'approved'),
-      orElse: () => false,
-    );
-
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'Workboard',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: Icon(Icons.notifications_outlined),
-                onPressed: () => context.push('/worker-notifications'),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '3',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      drawer: _buildDrawer(context, category, workerPhone),
-      body: complaintsAsync.when(
-        loading: () => Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        data: (complaints) {
-          // Categorize data
-          final critical = complaints.where((c) =>
-              (c.urgency == 'emergency' || c.urgency == 'high') &&
-              (c.status == 'submitted' || c.status == 'queued' || c.status == 'reopened')).toList();
-
-          final pending = complaints.where((c) =>
-              (c.urgency == 'medium' || c.urgency == 'low') &&
-              (c.status == 'submitted' || c.status == 'queued')).toList();
-
-          final revisits = complaints.where((c) =>
-              c.status == 'reopened' || c.status == 'need_tools').toList();
-
-          final scheduled = complaints.where((c) =>
-              c.status == 'revisit_scheduled' || c.availability.type == 'custom').toList();
-
-          // Apply current filter
-          List<Complaint> filteredComplaints;
-          switch (_currentFilter) {
-            case TaskFilter.critical:
-              filteredComplaints = critical;
-              break;
-            case TaskFilter.pending:
-              filteredComplaints = pending;
-              break;
-            case TaskFilter.revisits:
-              filteredComplaints = revisits;
-              break;
-            case TaskFilter.scheduled:
-              filteredComplaints = scheduled;
-              break;
-            case TaskFilter.all:
-              filteredComplaints = complaints.where((c) => c.status != 'closed').toList();
-              // Sort overall list: Critical first, then pending
-              filteredComplaints.sort((a, b) {
-                final aUrgency = _getUrgencyScore(a.urgency);
-                final bUrgency = _getUrgencyScore(b.urgency);
-                return bUrgency.compareTo(aUrgency);
-              });
-              break;
-          }
-
-          return SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeaderProfile(theme, category, isPaused),
-                        SizedBox(height: 24),
-                        Text('Quick Stats', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        SizedBox(height: 12),
-                        _buildStatsGrid(theme, critical.length, pending.length, scheduled.length, revisits.length),
-                        SizedBox(height: 16),
-                        if (category == 'ironing')
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade50, foregroundColor: Colors.red.shade900),
-                              icon: Icon(Icons.currency_rupee),
-                              label: Text('Resident Dues (Ledger)'),
-                              onPressed: () => context.push('/worker-dues'),
-                            ),
-                          ),
-                        SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _getFilterTitle(),
-                              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            if (_currentFilter != TaskFilter.all)
-                              TextButton(
-                                onPressed: () => setState(() => _currentFilter = TaskFilter.all),
-                                child: Text('View All'),
-                              ),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                      ],
-                    ),
-                  ),
-                ),
-                filteredComplaints.isEmpty
-                    ? SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.check_circle_outline, size: 64, color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                              SizedBox(height: 16),
-                              Text('No ${_getFilterTitle().toLowerCase()} found.', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                            ],
-                          ),
-                        ),
-                      )
-                    : SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return _buildPremiumTaskCard(context, filteredComplaints[index]);
-                            },
-                            childCount: filteredComplaints.length,
-                          ),
-                        ),
-                      ),
-                const SliverToBoxAdapter(child: SizedBox(height: 40)), // Bottom padding
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  int _getUrgencyScore(String urgency) {
-    switch (urgency.toLowerCase()) {
-      case 'emergency': return 4;
-      case 'high': return 3;
-      case 'medium': return 2;
-      default: return 1;
-    }
-  }
-
-  String _getFilterTitle() {
-    switch (_currentFilter) {
-      case TaskFilter.critical: return 'Critical Tasks';
-      case TaskFilter.pending: return 'Pending Tasks';
-      case TaskFilter.revisits: return 'Revisits Needed';
-      case TaskFilter.scheduled: return 'Scheduled Visits';
-      case TaskFilter.all: return 'All Active Tasks';
-    }
-  }
-
-  Widget _buildHeaderProfile(ThemeData theme, String category, bool isPaused) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.white.withValues(alpha: 0.2),
-            child: Icon(
-              category == 'electrical' 
-                  ? Icons.electrical_services 
-                  : category == 'plumbing' 
-                      ? Icons.plumbing 
-                      : category == 'ironing' 
-                          ? Icons.iron 
-                          : Icons.cleaning_services,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Good Morning,',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
-                ),
-                Text(
-                  category == 'electrical' 
-                      ? 'Electrician Pro' 
-                      : category == 'plumbing' 
-                          ? 'Plumbing Pro' 
-                          : category == 'ironing' 
-                              ? 'Ironing Pro' 
-                              : 'Housekeeping Pro',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                if (isPaused)
-                  Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orangeAccent.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orangeAccent, width: 1),
-                    ),
-                    child: Text('WORKBOARD PAUSED', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid(ThemeData theme, int critical, int pending, int scheduled, int revisits) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.6,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: [
-        _buildStatCard(
-          theme, 
-          title: 'Critical', 
-          count: critical, 
-          icon: Icons.warning_amber_rounded, 
-          color: AppTheme.emergencyColor,
-          filter: TaskFilter.critical,
-        ),
-        _buildStatCard(
-          theme, 
-          title: 'Pending', 
-          count: pending, 
-          icon: Icons.hourglass_empty_rounded, 
-          color: Colors.blue,
-          filter: TaskFilter.pending,
-        ),
-        _buildStatCard(
-          theme, 
-          title: 'Scheduled', 
-          count: scheduled, 
-          icon: Icons.calendar_month_rounded, 
-          color: Colors.teal,
-          filter: TaskFilter.scheduled,
-        ),
-        _buildStatCard(
-          theme, 
-          title: 'Revisits', 
-          count: revisits, 
-          icon: Icons.build_circle_outlined, 
-          color: Colors.purple,
-          filter: TaskFilter.revisits,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(ThemeData theme, {required String title, required int count, required IconData icon, required Color color, required TaskFilter filter}) {
-    final isSelected = _currentFilter == filter;
-    
-    return InkWell(
-      onTap: () => setState(() => _currentFilter = isSelected ? TaskFilter.all : filter),
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? color : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? color : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.2), width: 1.5),
-          boxShadow: isSelected ? [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
-        ),
-        child: Column(
+    final updated = DateFormat('dd MMM · hh:mm a').format(workOrder.updatedAt);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        title: Text(workOrder.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(icon, color: isSelected ? Colors.white : color, size: 24),
-                Text(
-                  count.toString(),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white.withValues(alpha: 0.9) : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              workOrder.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              [
+                if (workOrder.assetCode != null) 'Asset ${workOrder.assetCode}',
+                updated,
+              ].join(' · '),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.secondary),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildPremiumTaskCard(BuildContext context, Complaint complaint) {
-    final theme = Theme.of(context);
-    final isEmergency = complaint.urgency == 'emergency';
-    final urgencyColor = _getUrgencyColor(complaint.urgency);
-    final statusColor = _getStatusColor(complaint.status);
-    final formattedDate = DateFormat('MMM dd, hh:mm a').format(DateTime.parse(complaint.createdAt));
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(6),
           ),
-        ],
-        border: Border.all(
-          color: isEmergency ? urgencyColor.withValues(alpha: 0.5) : Colors.transparent,
-          width: 1.5,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => context.push('/worker-complaint/${complaint.id}'),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top strip indicator for urgency
-              Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: urgencyColor,
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Flat Info
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Flat ${complaint.flatId}',
-                            style: TextStyle(
-                              color: theme.colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        // Status Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-                          ),
-                          child: Text(
-                            complaint.status.replaceAll('_', ' ').toUpperCase(),
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      complaint.category.toUpperCase(),
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant, letterSpacing: 1.2),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      complaint.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    // Action Footer
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.access_time_rounded, size: 14, color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                            SizedBox(width: 4),
-                            Text(formattedDate, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              'View Details',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_rounded, size: 16, color: theme.colorScheme.primary),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          child: Text(
+            workOrder.status.label.toUpperCase(),
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context, String category, String workerPhone) {
-    final theme = Theme.of(context);
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: theme.colorScheme.primaryContainer),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CircleAvatar(
-                  backgroundColor: theme.colorScheme.primary,
-                  radius: 28,
-                  child: Icon(
-                    category == 'electrical' 
-                        ? Icons.electrical_services 
-                        : category == 'plumbing' 
-                            ? Icons.plumbing 
-                            : category == 'ironing' 
-                                ? Icons.iron 
-                                : Icons.cleaning_services,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  category == 'electrical' 
-                      ? 'Electrician Specialist' 
-                      : category == 'plumbing' 
-                          ? 'Plumbing Specialist' 
-                          : category == 'ironing' 
-                              ? 'Ironing Specialist' 
-                              : 'Housekeeping Specialist',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                Text(workerPhone, style: theme.textTheme.bodySmall),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.dashboard_outlined),
-            title: Text('Workboard'),
-            onTap: () => context.pop(),
-          ),
-          ListTile(
-            leading: Icon(Icons.pause_circle_outline),
-            title: Text('Request Pause'),
-            onTap: () {
-              context.pop();
-              context.push('/worker-pause-request');
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.date_range_outlined),
-            title: Text('Apply for Leave'),
-            onTap: () {
-              context.pop();
-              context.push('/worker-leave-request');
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.history_toggle_off_outlined),
-            title: Text('Leave History'),
-            onTap: () {
-              context.pop();
-              context.push('/worker-leave-history');
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.history_outlined),
-            title: Text('Task History'),
-            onTap: () {
-              context.pop();
-              context.push('/worker-history');
-            },
-          ),
-          const Divider(),
-        ],
+        isThreeLine: true,
       ),
     );
   }

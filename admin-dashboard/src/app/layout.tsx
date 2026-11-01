@@ -4,8 +4,9 @@ import Sidebar from "@/components/Sidebar";
 import ClientProviders from "@/components/ClientProviders";
 
 export const metadata: Metadata = {
-  title: "SocietySync — Admin Dashboard",
-  description: "Residential society maintenance coordination platform. Monitor complaints, escalations, worker performance, and society-wide operations.",
+  title: "MONSOONPROOF — Admin Dashboard",
+  description:
+    "Cross-society monsoon drainage coordination. Track incoming reports, shared cases, federation handoffs, and repair work orders.",
 };
 
 export default function RootLayout({

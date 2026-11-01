@@ -25,6 +25,9 @@ class AuthState {
   final String? profilePictureUrl;
   final String? errorMessage;
   final List<String> readNotifications;
+  final String? societyId;
+  final String? societyName;
+  final bool isDemo;
 
   AuthState({
     required this.status,
@@ -37,6 +40,9 @@ class AuthState {
     this.profilePictureUrl,
     this.errorMessage,
     this.readNotifications = const [],
+    this.societyId,
+    this.societyName,
+    this.isDemo = false,
   });
 
   factory AuthState.initial() => AuthState(status: AuthStatus.initial);
@@ -52,6 +58,9 @@ class AuthState {
     String? profilePictureUrl,
     String? errorMessage,
     List<String>? readNotifications,
+    String? societyId,
+    String? societyName,
+    bool? isDemo,
   }) {
     return AuthState(
       status: status ?? this.status,
@@ -64,6 +73,9 @@ class AuthState {
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       errorMessage: errorMessage ?? this.errorMessage,
       readNotifications: readNotifications ?? this.readNotifications,
+      societyId: societyId ?? this.societyId,
+      societyName: societyName ?? this.societyName,
+      isDemo: isDemo ?? this.isDemo,
     );
   }
 }
@@ -235,45 +247,87 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Demo access without Firebase — MonsoonProof personas.
+  void loginAsDemoPersona({
+    required String userId,
+    required String name,
+    required String role,
+    String? societyId,
+    String? societyName,
+    String? flatId,
+    String? category,
+  }) {
+    if (role == 'worker') {
+      state = AuthState(
+        status: AuthStatus.authenticatedWorker,
+        userId: userId,
+        role: 'worker',
+        name: name,
+        category: category ?? 'drainage',
+        phone: '9000000000',
+        isDemo: true,
+      );
+    } else {
+      state = AuthState(
+        status: AuthStatus.authenticatedResident,
+        userId: userId,
+        role: 'resident',
+        name: name,
+        flatId: flatId ?? 'Demo',
+        societyId: societyId,
+        societyName: societyName,
+        phone: '9000000000',
+        isDemo: true,
+      );
+    }
+  }
+
   /// Sign out
   Future<void> logout() async {
+    final wasDemo = state.isDemo;
     state = state.copyWith(status: AuthStatus.authenticating);
-    
-    // Clear FCM token before signing out so they don't receive notifications while logged out
-    final uid = state.userId;
-    if (uid != null) {
-      try {
-        await FirebaseFirestore.instance.collection('users').doc(uid).update({
-          'fcmToken': FieldValue.delete(),
-        });
-      } catch (e) {
-        // Ignore if user document doesn't exist or offline
+
+    if (!wasDemo) {
+      // Clear FCM token before signing out so they don't receive notifications while logged out
+      final uid = state.userId;
+      if (uid != null) {
+        try {
+          await FirebaseFirestore.instance.collection('users').doc(uid).update({
+            'fcmToken': FieldValue.delete(),
+          });
+        } catch (e) {
+          // Ignore if user document doesn't exist or offline
+        }
       }
+      await _authService.signOut();
     }
-    
-    await _authService.signOut();
+
     state = AuthState(status: AuthStatus.unauthenticated);
   }
 
   Future<void> updateProfilePicture(String url) async {
     final uid = state.userId;
     if (uid == null) return;
-    
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'profilePictureUrl': url,
-    });
-    
+
+    if (!state.isDemo) {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'profilePictureUrl': url,
+      });
+    }
+
     state = state.copyWith(profilePictureUrl: url);
   }
 
   Future<void> updateProfileName(String newName) async {
     final uid = state.userId;
     if (uid == null) return;
-    
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'name': newName,
-    });
-    
+
+    if (!state.isDemo) {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'name': newName,
+      });
+    }
+
     state = state.copyWith(name: newName);
   }
 
@@ -283,25 +337,29 @@ class AuthNotifier extends Notifier<AuthState> {
     if (state.readNotifications.contains(notificationId)) return;
 
     final updatedList = [...state.readNotifications, notificationId];
-    
+
     // Optimistic UI update
     state = state.copyWith(readNotifications: updatedList);
-    
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'readNotifications': FieldValue.arrayUnion([notificationId]),
-    });
+
+    if (!state.isDemo) {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'readNotifications': FieldValue.arrayUnion([notificationId]),
+      });
+    }
   }
 
   Future<void> markAllNotificationsAsRead(List<String> allNotificationIds) async {
     final uid = state.userId;
     if (uid == null) return;
-    
+
     // Optimistic UI update
     state = state.copyWith(readNotifications: allNotificationIds);
-    
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'readNotifications': allNotificationIds,
-    });
+
+    if (!state.isDemo) {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'readNotifications': allNotificationIds,
+      });
+    }
   }
 
   void clearError() {
