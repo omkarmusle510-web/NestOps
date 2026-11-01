@@ -35,7 +35,7 @@ class _VerifyRepairScreenState extends ConsumerState<VerifyRepairScreen> {
     }
 
     final caseAsync = ref.read(sharedCaseProvider(widget.caseId));
-    final sharedCase = caseAsync.valueOrNull;
+    final sharedCase = caseAsync.value;
     if (sharedCase == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Case not loaded. Pull to refresh.')),

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "47849992844",
-    "project_id": "soc-appv1",
-    "storage_bucket": "soc-appv1.firebasestorage.app"
+    "project_number": "255362025006",
+    "project_id": "nestops-9e7a5",
+    "storage_bucket": "nestops-9e7a5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:47849992844:android:f93418e120cb39fa6241a9",
+        "mobilesdk_app_id": "1:255362025006:android:7c32efd95c9545b20bc1bf",
         "android_client_info": {
           "package_name": "com.societymaintenance.society_mobile_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDWUhNRMWCbsnK40tWrQI5JahvwXzmzySA"
+          "current_key": "AIzaSyAfwAhL2LGk14X-qIE2VhELb5tfGT5XiB8"
         }
       ],
       "services": {

@@ -24,7 +24,7 @@ class _WorkOrderDetailsScreenState extends ConsumerState<WorkOrderDetailsScreen>
   bool _busy = false;
 
   Future<void> _setStatus(WorkOrderStatus status, {String? note}) async {
-    final wo = ref.read(workOrderProvider(widget.workOrderId)).valueOrNull;
+    final wo = ref.read(workOrderProvider(widget.workOrderId)).value;
     if (wo == null) return;
     final auth = ref.read(authProvider);
     setState(() => _busy = true);
@@ -75,7 +75,7 @@ class _WorkOrderDetailsScreenState extends ConsumerState<WorkOrderDetailsScreen>
     final url = await _pickMockUrl(source);
     if (url == null) return;
 
-    final wo = ref.read(workOrderProvider(widget.workOrderId)).valueOrNull;
+    final wo = ref.read(workOrderProvider(widget.workOrderId)).value;
     if (wo == null) return;
 
     setState(() => _busy = true);

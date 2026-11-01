@@ -47,18 +47,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDWUhNRMWCbsnK40tWrQI5JahvwXzmzySA',
-    appId: '1:47849992844:android:f93418e120cb39fa6241a9',
-    messagingSenderId: '47849992844',
-    projectId: 'soc-appv1',
-    storageBucket: 'soc-appv1.firebasestorage.app',
+    apiKey: 'AIzaSyAfwAhL2LGk14X-qIE2VhELb5tfGT5XiB8',
+    appId: '1:255362025006:android:7c32efd95c9545b20bc1bf',
+    messagingSenderId: '255362025006',
+    projectId: 'nestops-9e7a5',
+    storageBucket: 'nestops-9e7a5.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBFqJwijcmSo-6u2IldRu0fgkXRnAJYkKg',
-    appId: '1:47849992844:ios:d5bf67e19d273ccf6241a9',
-    messagingSenderId: '47849992844',
-    projectId: 'soc-appv1',
-    storageBucket: 'soc-appv1.firebasestorage.app',
+    apiKey: 'AIzaSyA1AJ5IX1jHzQ_-oGxlyhFHksnuZzaJswE',
+    appId: '1:255362025006:ios:6b534af82cff04210bc1bf',
+    messagingSenderId: '255362025006',
+    projectId: 'nestops-9e7a5',
+    storageBucket: 'nestops-9e7a5.firebasestorage.app',
     iosBundleId: 'com.societymaintenance.societyMobileApp',
   );
   static const FirebaseOptions web = FirebaseOptions(
