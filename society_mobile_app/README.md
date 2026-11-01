@@ -1,6 +1,8 @@
-# society_mobile_app
+# NestOps mobile application
 
-A new Flutter project.
+This directory contains the Flutter mobile application for residents, workers, and guards.
+
+The shared application map is in [`../docs/application.md`](../docs/application.md), and the complete architecture reference is in [`../docs/architecture/README.md`](../docs/architecture/README.md).
 
 ## Getting Started
 
