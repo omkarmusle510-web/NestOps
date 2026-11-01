@@ -1,0 +1,146 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function membershipPath(organizationId) {
+      return /databases/(default)/documents/memberships/$(request.auth.uid + '__' + organizationId);
+    }
+
+    function activeMember(organizationId) {
+      return signedIn()
+        && firestore.exists(membershipPath(organizationId))
+        && firestore.get(membershipPath(organizationId)).data.active == true
+        && firestore.get(membershipPath(organizationId)).data.uid == request.auth.uid;
+    }
+
+    function caseParticipant(caseData) {
+      return signedIn() && (
+        activeMember(caseData.currentOwnerOrgId) ||
+        (caseData.proposedRecipientOrgId != null
+          && activeMember(caseData.proposedRecipientOrgId)) ||
+        caseData.affectedReporterUids.hasAny([request.auth.uid]) ||
+        caseData.assignedWorkerUids.hasAny([request.auth.uid])
+      );
+    }
+
+    function permittedImage() {
+      return request.resource.size > 0
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp']
+        && request.resource.metadata.ownerUid == request.auth.uid;
+    }
+
+    // ──────────────────────────────────────
+    // Complaint Images
+    // ──────────────────────────────────────
+    match /complaints/{complaintId}/{imageFile} {
+      // Authenticated users can read complaint images
+      allow read: if request.auth != null;
+
+      // Only authenticated users can upload
+      // Max file size: 5MB
+      // Only image types allowed
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ──────────────────────────────────────
+    // Society Issue Images
+    // ──────────────────────────────────────
+    match /society_issues/{issueId}/{imageFile} {
+      allow read: if request.auth != null;
+
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ──────────────────────────────────────
+    // Profile Images
+    // ──────────────────────────────────────
+    match /profiles/{userId}/{imageFile} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /propLock/incidents/{incidentId}/{buildingId}/{uploaderUid}/{imageFile} {
+      function buildingPath() {
+        return /databases/(default)/documents/buildings/$(buildingId);
+      }
+
+      function incidentPhotoReader() {
+        let incidentPath = /databases/(default)/documents/incidents/$(incidentId);
+        let building = firestore.get(buildingPath()).data;
+        let incident = firestore.get(incidentPath).data;
+        let sharedCaseId = incident.get('sharedCaseId', '');
+        return uploaderUid == request.auth.uid ||
+          activeMember(building.societyOrgId) ||
+          (sharedCaseId != ''
+            && firestore.exists(/databases/(default)/documents/sharedCases/$(sharedCaseId))
+            && caseParticipant(
+              firestore.get(/databases/(default)/documents/sharedCases/$(sharedCaseId)).data
+            ));
+      }
+
+      allow read: if signedIn()
+        && firestore.exists(buildingPath())
+        && firestore.exists(/databases/(default)/documents/incidents/$(incidentId))
+        && incidentPhotoReader();
+      allow write: if signedIn()
+        && request.auth.uid == uploaderUid
+        && firestore.exists(buildingPath())
+        && activeMember(firestore.get(buildingPath()).data.societyOrgId)
+        && firestore.get(membershipPath(
+          firestore.get(buildingPath()).data.societyOrgId
+        )).data.role == 'resident'
+        && resource == null
+        && permittedImage();
+    }
+
+    match /propLock/evidence/{caseId}/{workOrderId}/{uploaderUid}/{imageFile} {
+      function casePath() {
+        return /databases/(default)/documents/sharedCases/$(caseId);
+      }
+
+      function workOrderPath() {
+        return /databases/(default)/documents/workOrders/$(workOrderId);
+      }
+
+      allow read: if signedIn()
+        && firestore.exists(casePath())
+        && firestore.exists(workOrderPath())
+        && (
+          firestore.get(workOrderPath()).data.assignedTo == request.auth.uid ||
+          caseParticipant(firestore.get(casePath()).data)
+        );
+      allow write: if signedIn()
+        && request.auth.uid == uploaderUid
+        && firestore.exists(casePath())
+        && firestore.exists(workOrderPath())
+        && firestore.get(workOrderPath()).data.caseId == caseId
+        && firestore.get(workOrderPath()).data.assignedTo == request.auth.uid
+        && firestore.get(workOrderPath()).data.assignedToOrgId != null
+        && activeMember(firestore.get(workOrderPath()).data.assignedToOrgId)
+        && firestore.get(membershipPath(
+          firestore.get(workOrderPath()).data.assignedToOrgId
+        )).data.role == 'maintenance_worker'
+        && firestore.get(workOrderPath()).data.status in ['in_progress', 'awaiting_verification']
+        && firestore.get(casePath()).data.activeWorkOrderId == workOrderId
+        && resource == null
+        && permittedImage();
+    }
+
+    // Deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
