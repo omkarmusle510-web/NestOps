@@ -1,4 +1,4 @@
-# SocietySync
+# NextOps
 
 A modern, full-stack society management solution designed to streamline the handling of complaints, common area issues, and service requests (like ironing) between residents, workers, and administrators. 
 
